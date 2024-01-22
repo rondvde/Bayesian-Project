@@ -831,6 +831,165 @@ color_scheme_set()
 ppc_stat(penguins$bill_length, y_pred8)
 
 
+#plot hamilonian montecalo convergence with 1 chain (no warm up)
+
+#sample_plot_sep_selection <- sampling(model8, data=stan_data, iter=2000, chains=1)
+sample_plot_sep_selection <- sampling(model8, data=stan_data, iter=2000, chains=1,control=list(max_treedepth=15))
+params_cp_sep_selection <- as.data.frame(extract(sample_plot_sep_selection , permuted=FALSE))
+names(params_cp_sep_selection) <- gsub("chain:1.", "", names(sample_plot_sep_selection), fixed = TRUE)
+params_cp_sep_selection$iter <- 1:length(params_cp_sep_selection$"beta_width_species[1]")
+
+
+
+p1_sep_selection<-ggplot(params_cp_sep_selection) +
+  geom_point(aes(x = iter, y = `gamma_species[1]`), color = "darkorange", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "intercept_species") +
+  ylim(-120, 170) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = `gamma_species[2]`), color ="seagreen3", size = 2, alpha=0.4)+
+  geom_point(aes(x = iter, y = `gamma_species[3]`), color = "yellow2", size = 2, alpha=0.4)
+
+p2_sep_selection<-ggplot(params_cp_sep_selection) +
+  geom_point(aes(x = iter, y = `gamma_sex[1]`), color = "pink1", size = 2, alpha=0.8) +
+  labs(x = "Iteration", y = "intercept_sex") +
+  ylim(-150, 155) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = `gamma_sex[2]`), color ="lightblue", size = 2, alpha=0.2)
+
+p3_sep_selection<-ggplot(params_cp_sep_selection) +
+  geom_point(aes(x = iter, y = `beta_width_species[1]`), color = "darkorange", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "beta_depth_species") +
+  ylim(-1, 2.5) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = `beta_width_species[2]`), color ="seagreen3", size = 2, alpha=0.4)+
+  geom_point(aes(x = iter, y = `beta_width_species[3]`), color = "yellow2", size = 2, alpha=0.4)
+
+p4_sep_selection<-ggplot(params_cp_sep_selection) +
+  geom_point(aes(x = iter, y = `sigma`), color = "blue", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "sigma") +
+  ylim(3.5, 9) +
+  theme_minimal()
+grid.arrange(p1_sep_selection, p2_sep_selection, p3_sep_selection, p4_sep_selection, ncol = 2)
+
+
+#mean conergences
+
+running_means_gammaspe1_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"gamma_species[1]"[1:n]))
+running_means_gammaspe2_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"gamma_species[2]"[1:n]))
+running_means_gammaspe3_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"gamma_species[3]"[1:n]))
+
+p1mu_sep_selection<-ggplot(params_cp_sep_selection) +
+  geom_point(aes(x = iter, y = running_means_gammaspe1_sep_selection), color = "darkorange", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "intercept_species") +
+  ylim(-50, 50) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = running_means_gammaspe2_sep_selection), color = "seagreen", size = 1, shape = 16) +
+  geom_point(aes(x = iter, y = running_means_gammaspe3_sep_selection), color = "yellow2", size = 1, shape = 16) 
+
+running_means_beta_gamma1_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"gamma_sex[1]"[1:n]))
+running_means_beta_gamma2_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"gamma_sex[2]"[1:n]))
+p2mu_sep_selection<-ggplot(params_cp_sep_selection) +
+  geom_point(aes(x = iter, y = running_means_beta_gamma1_sep_selection), color = "blue", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "intercepts_sex") +
+  ylim(0, 70) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = running_means_beta_gamma2_sep_selection), color = "pink", size = 1, shape = 16)
+
+running_means_beta_depth1_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"beta_width_species[1]"[1:n]))
+running_means_beta_depth2_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"beta_width_species[2]"[1:n]))
+running_means_beta_depth3_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"beta_width_species[3]"[1:n]))
+p3mu_sep_selection<-ggplot(params_cp_sep_selection) +
+  geom_point(aes(x = iter, y = running_means_beta_depth1_sep_selection), color = "darkorange", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "beta_species_depth") +
+  ylim(0, 2) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = running_means_beta_depth2_sep_selection), color = "seagreen", size = 1, shape = 16) +
+  geom_point(aes(x = iter, y = running_means_beta_depth3_sep_selection), color = "yellow2", size = 1, shape = 16, alpha=0.2) 
+
+running_means_sigma_sep_selection <- sapply(params_cp_sep_selection$iter, function(n) mean(params_cp_sep_selection$"sigma"[1:n]))
+p4mu_sep_selection<-ggplot(params_cp_sep_selection) +
+  geom_point(aes(x = iter, y = running_means_sigma_sep_selection), color = "blue", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "sigma") +
+  ylim(5.5, 6.25) +
+  theme_minimal()
+grid.arrange(p1mu_sep_selection, p2mu_sep_selection, p3mu_sep_selection, p4mu_sep_selection, ncol = 2)
+
+
+#plot divergence 2 dim 2 coef
+
+divergent_sep_selection <- get_sampler_params(sample_plot_sep_selection, inc_warmup=FALSE)[[1]][,'divergent__']
+sum(divergent_sep_selection) #zero
+sum(divergent_sep_selection) / 10000
+#zero divergences
+params_cp_sep_selection$divergent_sep_selection <- divergent_sep_selection
+
+div_params_cp_sep_selection <- params_cp_sep_selection[params_cp_sep_selection$divergent_sep_selection == 1,]
+nondiv_params_cp_sep_selection <- params_cp_sep_selection[params_cp_sep_selection$divergent_sep_selection == 0,]
+# [1] "gamma_species[1]"      "gamma_species[2]"      "gamma_species[3]"     
+# [4] "beta_width_species[1]" "beta_width_species[2]" "beta_width_species[3]"
+# [7] "gamma_sex[1]"          "gamma_sex[2]"          "sigma" 
+ggplot(nondiv_params_cp_sep_selection) +
+  geom_point(aes(x = `gamma_species[1]`, y = `beta_width_species[1]`), color = "darkorange", size = 2, alpha=0.4) +
+  labs(x = "intercept_species", y = "beta_depth_species") +
+  ylim(-1, 2.70) +
+  xlim(-100,170)+
+  theme_minimal()+
+  geom_point(aes(x = `gamma_species[2]`, y = `beta_width_species[2]`), color ="seagreen3", size = 2, alpha=0.4)+
+  geom_point(aes(x = `gamma_species[3]`, y = `beta_width_species[3]`), color = "yellow2", size = 2, alpha=0.4)+
+  #adding_divergences point here 0 points
+  geom_point(data=div_params_cp_sep_selection, aes(x = `gamma_species[1]`, y = `beta_width_species[1]`), color = "darkorange", size = 2)+
+  geom_point(data=div_params_cp_sep_selection, aes(x = `gamma_species[2]`, y = `beta_width_species[2]`), color ="seagreen3", size = 2)+
+  geom_point(data=div_params_cp_sep_selection, aes(x = `gamma_species[3]`, y = `beta_width_species[3]`), color = "yellow2", size = 2)
+
+
+#plot regression lines
+
+gamma_values_sep_selection <- as.numeric(apply(list_of_draws8$gamma_species, 2, mean))
+gamma_sex_values_sep_selection <- as.numeric(apply(list_of_draws8$gamma_sex, 2, mean))
+beta_width_values_sep_selection <- as.numeric(apply(list_of_draws8$beta_width_species, 2, mean))
+
+# Create a data frame for plotting
+plot_data <- data.frame(
+  bill_depth = penguins$bill_depth,
+  bill_length = penguins$bill_length,
+  sex=penguins$sex,
+  species = as.factor(penguins$species)
+)
+
+# Predicted values using the linear models
+plot_data$predicted <- with(plot_data, gamma_values_sep_selection[species] + gamma_sex_values_sep_selection[sex+1] + beta_width_values_sep_selection[species]*bill_depth)
+plot_data$predicted<- rep(NA, nrow(penguins))
+n<-nrow(penguins)
+for(i in (1:n)){
+  plot_data$predicted[i]<-gamma_values_sep_selection[plot_data$species[i]]+gamma_sex_values_sep_selection[plot_data$sex[i+1]]+beta_width_values_sep_selection[plot_data$species[i]]*plot_data$bill_depth[i]
+}
+plot_data$predicted[1]<-gamma_values_sep_selection[plot_data$species[1]]+gamma_sex_values_sep_selection[0]+beta_width_values_sep_selection[plot_data$species[1]]*plot_data$bill_depth[1]
+plot_data[1,]
+plotdata1___0_sep_selection<-plot_data[plot_data$species==1 & plot_data$sex==0,]
+plotdata1___1_sep_selection<-plot_data[plot_data$species==1 & plot_data$sex==1,]
+plotdata3___0_sep_selection<-plot_data[plot_data$species==3 & plot_data$sex==0,]
+plotdata3___1_sep_selection<-plot_data[plot_data$species==3 & plot_data$sex==1,]
+plotdata2___0_sep_selection<-plot_data[plot_data$species==2 & plot_data$sex==0,]
+plotdata2___1_sep_selection<-plot_data[plot_data$species==2 & plot_data$sex==1,]
+
+
+
+# Create a scatterplot with lines for each species
+plot_sep_selection <- ggplot(plot_data) +
+  geom_point(aes(x = bill_depth, y = bill_length, color = species), size = 1.8, alpha=0.5 ) +
+  geom_line(data= plotdata1___0_sep_selection, aes(x=bill_depth,y = predicted), linewidth = 2, col='darkorange')+
+  geom_line(data= plotdata1___1_sep_selection, aes(x=bill_depth,y = predicted), linewidth = 2, col='darkorange')+
+  geom_line(data= plotdata2___0_sep_selection, aes(x=bill_depth,y = predicted), linewidth = 2, col='seagreen3')+
+  geom_line(data= plotdata2___1_sep_selection, aes(x=bill_depth,y = predicted), linewidth = 2, col='seagreen3')+
+  geom_line(data= plotdata3___0_sep_selection, aes(x=bill_depth,y = predicted), linewidth = 2, col='yellow2')+
+  geom_line(data= plotdata3___1_sep_selection, aes(x=bill_depth,y = predicted), linewidth = 2, col='yellow2')+
+  scale_color_manual(values = c('darkorange', 'seagreen3', 'yellow2'),
+                     labels = c("Adelie", "Chinstrap", "Gentoo")) +
+  labs(title = "Scatterplot of Hierarchical Bayesian Linear Models for Each Species and Sex") +
+  theme_minimal()
+plot_sep_selection
+
+
 ####9. NO All Separate Hierarchical ####
 
 
