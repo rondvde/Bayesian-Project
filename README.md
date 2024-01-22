@@ -4,6 +4,6 @@ Moreover, inside the R file, near the title of the models there is a "YES" or a 
 The principal three models are "Separate2.stan", "Hierarchical1.stan" and "AllSeparate_nointer_nosexwidth.stan".
 
 Creators:
-Davide Rondini
-Francesca Barbaro
+Davide Rondini,
+Francesca Barbaro,
 Roberto Carminati
