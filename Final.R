@@ -925,9 +925,7 @@ params_cp_sep_selection$divergent_sep_selection <- divergent_sep_selection
 
 div_params_cp_sep_selection <- params_cp_sep_selection[params_cp_sep_selection$divergent_sep_selection == 1,]
 nondiv_params_cp_sep_selection <- params_cp_sep_selection[params_cp_sep_selection$divergent_sep_selection == 0,]
-# [1] "gamma_species[1]"      "gamma_species[2]"      "gamma_species[3]"     
-# [4] "beta_width_species[1]" "beta_width_species[2]" "beta_width_species[3]"
-# [7] "gamma_sex[1]"          "gamma_sex[2]"          "sigma" 
+
 ggplot(nondiv_params_cp_sep_selection) +
   geom_point(aes(x = `gamma_species[1]`, y = `beta_width_species[1]`), color = "darkorange", size = 2, alpha=0.4) +
   labs(x = "intercept_species", y = "beta_depth_species") +
@@ -958,21 +956,13 @@ plot_data <- data.frame(
 
 # Predicted values using the linear models
 plot_data$predicted <- with(plot_data, gamma_values_sep_selection[species] + gamma_sex_values_sep_selection[sex+1] + beta_width_values_sep_selection[species]*bill_depth)
-plot_data$predicted<- rep(NA, nrow(penguins))
-n<-nrow(penguins)
-for(i in (1:n)){
-  plot_data$predicted[i]<-gamma_values_sep_selection[plot_data$species[i]]+gamma_sex_values_sep_selection[plot_data$sex[i+1]]+beta_width_values_sep_selection[plot_data$species[i]]*plot_data$bill_depth[i]
-}
-plot_data$predicted[1]<-gamma_values_sep_selection[plot_data$species[1]]+gamma_sex_values_sep_selection[0]+beta_width_values_sep_selection[plot_data$species[1]]*plot_data$bill_depth[1]
-plot_data[1,]
+
 plotdata1___0_sep_selection<-plot_data[plot_data$species==1 & plot_data$sex==0,]
 plotdata1___1_sep_selection<-plot_data[plot_data$species==1 & plot_data$sex==1,]
 plotdata3___0_sep_selection<-plot_data[plot_data$species==3 & plot_data$sex==0,]
 plotdata3___1_sep_selection<-plot_data[plot_data$species==3 & plot_data$sex==1,]
 plotdata2___0_sep_selection<-plot_data[plot_data$species==2 & plot_data$sex==0,]
 plotdata2___1_sep_selection<-plot_data[plot_data$species==2 & plot_data$sex==1,]
-
-
 
 # Create a scatterplot with lines for each species
 plot_sep_selection <- ggplot(plot_data) +
