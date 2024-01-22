@@ -1158,31 +1158,26 @@ library("ggplot2")
 #POSTERIOR fit2
 posterior <- as.matrix(fit2)
 
-plot_title <- ggtitle("Posteriors Separate model",
+plot_title <- ggtitle("Posteriors Hierarchical model",
                       "medians and 80% intervals")
 mcmc_areas(posterior,
            pars = c("beta_width_2[1]",
                     "beta_width_2[2]", "beta_width_2[3]"),
            prob = 0.8) + plot_title
 
-plot_title <- ggtitle("Posteriors Separate model",
-                      "medians and 80% intervals")
 mcmc_areas(posterior,
            pars = c("beta_sex_2[1]",
                     "beta_sex_2[2]", "beta_sex_2[3]"),
            prob = 0.8) + plot_title
 
-plot_title <- ggtitle("Posteriors Separate model",
-                      "medians and 80% intervals")
+mcmc_areas(posterior,
+           pars = c("tau_depth",
+                    "tau_sex", "sigma"),
+           prob = 0.8) + plot_title
+
 mcmc_areas(posterior,
            pars = c("gamma[1]",
                     "gamma[2]", "gamma[3]"),
-           prob = 0.8) + plot_title
-
-plot_title <- ggtitle("Posteriors Separate model",
-                      "medians and 80% intervals")
-mcmc_areas(posterior,
-           pars = c("sigma"),
            prob = 0.8) + plot_title
 
 
@@ -1222,12 +1217,45 @@ beta.w <- summary(fit3)$summary[c(4,5,6)]
 beta.s <- summary(fit3)$summary[c(7,8,9)]
 
 
+#POSTERIORS fit8
+posterior <- as.matrix(fit8)
+
+plot_title <- ggtitle("Posteriors Model 3",
+                      "medians and 80% intervals")
+mcmc_areas(posterior,
+           pars = c("beta_width_species[1]",
+                    "beta_width_species[2]", "beta_width_species[3]"),
+           prob = 0.8) + plot_title
+
+mcmc_areas(posterior,
+           pars = c("gamma_sex[1]",
+                    "gamma_sex[2]"),
+           prob = 0.8) + plot_title
+
+mcmc_areas(posterior,
+           pars = c("gamma_species[1]",
+                    "gamma_species[2]", "gamma_species[3]"),
+           prob = 0.8) + plot_title
+
+plot_title <- ggtitle("Posteriors Separate model",
+                      "medians and 80% intervals")
+mcmc_areas(posterior,
+           pars = c("sigma"),
+           prob = 0.8) + plot_title
+
+plot_title <- ggtitle("Posteriors Separate model",
+                      "medians and 80% intervals")
+mcmc_areas(posterior,
+           pars = c("sigma"),
+           prob = 0.8) + plot_title
+
+
 ######→ Model selection ######
 
 #### Coefficient comparison ####
-summary(fit3)$summary
-summary(fit2)$summary
-summary(fit8)$summary
+round(summary(fit3)$summary, 3)
+round(summary(fit2)$summary, 3)
+round(summary(fit8)$summary, 3)
 
 plot(fit3)
 plot(fit2)
