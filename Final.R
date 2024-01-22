@@ -7,6 +7,7 @@ library(tidyr)
 library(latex2exp)
 library(loo)
 library("rstan")
+library(gridExtra)
 #setwd()
 set.seed(565923)
 penguins <- readRDS ("penguins.RDS")
@@ -245,6 +246,175 @@ ppc_stat_2d(penguins$bill_length, y_pred2, stat=c("min","max"))
 color_scheme_set()
 
 ppc_stat(penguins$bill_length, y_pred2)
+
+#plot hamilonian montecalo convergence with 1 chain (no warm up)
+
+sample_plot_hier <- sampling(model2, data=stan_data, iter=2000, chains=1)
+params_cp_hier <- as.data.frame(extract(sample_plot_hier , permuted=FALSE))
+names(params_cp_hier) <- gsub("chain:1.", "", names(sample_plot_hier), fixed = TRUE)
+params_cp_hier$iter <- 1:length(params_cp_hier$"beta_width_2[1]")
+
+p1_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = `beta_width_2[1]`), color = "darkorange", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "beta_depth") +
+  ylim(-2, 4) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = `beta_width_2[2]`), color ="seagreen3", size = 2, alpha=0.4)+
+  geom_point(aes(x = iter, y = `beta_width_2[3]`), color = "yellow2", size = 2, alpha=0.4)
+
+p2_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = `gamma[1]`), color = "darkorange", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "intercept") +
+  ylim(0, 55) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = `gamma[2]`), color ="seagreen3", size = 2, alpha=0.4)+
+  geom_point(aes(x = iter, y = `gamma[3]`), color = "yellow2", size = 2, alpha=0.4)
+
+p3_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = `beta_sex_2[1]`), color = "darkorange", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "beta_sex") +
+  ylim(-1, 7) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = `beta_sex_2[2]`), color ="seagreen3", size = 2, alpha=0.4)+
+  geom_point(aes(x = iter, y = `beta_sex_2[3]`), color = "yellow2", size = 2, alpha=0.4)
+
+p4_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = `sigma`), color = "blue", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "sigma") +
+  ylim(3.5, 9) +
+  theme_minimal()
+grid.arrange(p1_hier, p2_hier, p3_hier, p4_hier, ncol = 2)
+p5_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = `tau_depth`), color = "purple", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "tau_depth") +
+  ylim(-2, 5) +
+  theme_minimal()
+p6_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = `tau_sex`), color = "brown", size = 2, alpha=0.4) +
+  labs(x = "Iteration", y = "tau_sex") +
+  ylim(-1, 6) +
+  theme_minimal()
+grid.arrange(p5_hier,p6_hier,p1_hier, p2_hier, p3_hier, p4_hier, ncol = 2)
+
+#mean conergences
+
+running_means_betaw1_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"beta_width_2[1]"[1:n]))
+running_means_betaw2_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"beta_width_2[2]"[1:n]))
+running_means_betaw3_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"beta_width_2[3]"[1:n]))
+p1mu_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = running_means_betaw1_hier), color = "darkorange", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "beta_depth") +
+  ylim(-0.5, 1.8) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = running_means_betaw2_hier), color = "seagreen", size = 1, shape = 16) +
+  geom_point(aes(x = iter, y = running_means_betaw3_hier), color = "yellow2", size = 1, shape = 16) 
+
+running_means_beta_gamma1_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"gamma[1]"[1:n]))
+running_means_beta_gamma2_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"gamma[2]"[1:n]))
+running_means_beta_gamma3_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"gamma[3]"[1:n]))
+p2mu_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = running_means_beta_gamma1_hier), color = "darkorange", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "intercepts") +
+  ylim(19, 45) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = running_means_beta_gamma2_hier), color = "seagreen", size = 1, shape = 16) +
+  geom_point(aes(x = iter, y = running_means_beta_gamma3_hier), color = "yellow2", size = 1, shape = 16) 
+
+running_means_beta_sex1_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"beta_sex_2[1]"[1:n]))
+running_means_beta_sex2_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"beta_sex_2[2]"[1:n]))
+running_means_beta_sex3_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"beta_sex_2[3]"[1:n]))
+p3mu_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = running_means_beta_sex1_hier), color = "darkorange", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "beta_sex") +
+  ylim(1, 4.25) +
+  theme_minimal()+
+  geom_point(aes(x = iter, y = running_means_beta_sex2_hier), color = "seagreen", size = 1, shape = 16) +
+  geom_point(aes(x = iter, y = running_means_beta_sex3_hier), color = "yellow2", size = 1, shape = 16) 
+
+running_means_sigma_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"sigma"[1:n]))
+p4mu_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = running_means_sigma_hier), color = "blue", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "sigma") +
+  ylim(5.5, 6.75) +
+  theme_minimal()
+grid.arrange(p1mu_hier, p2mu_hier, p3mu_hier, p4mu_hier, ncol = 2)
+
+running_means_tausex_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"tau_sex"[1:n]))
+p6mu_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = running_means_tausex_hier), color = "brown", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "tau_sex") +
+  ylim(1, 3.5) +
+  theme_minimal()
+
+running_means_taudepth_hier <- sapply(params_cp_hier$iter, function(n) mean(params_cp_hier$"tau_depth"[1:n]))
+p5mu_hier<-ggplot(params_cp_hier) +
+  geom_point(aes(x = iter, y = running_means_taudepth_hier), color = "purple", size = 1, shape = 16) +
+  labs(x = "Iteration", y = "tau_depth") +
+  ylim(0, 2) +
+  theme_minimal()
+grid.arrange(p5mu_hier,p6mu_hier,p1mu_hier, p2mu_hier, p3mu_hier, p4mu_hier, ncol = 2)
+
+#plot divergence 2 dim 2 coef
+
+divergent_hier <- get_sampler_params(sample_plot_hier, inc_warmup=FALSE)[[1]][,'divergent__']
+sum(divergent_hier) #zero
+sum(divergent_hier) / 10000
+#zero divergences
+params_cp_hier$divergent_hier <- divergent_hier
+
+div_params_cp_hier <- params_cp_hier[params_cp_hier$divergent_hier == 1,]
+nondiv_params_cp_hier <- params_cp_hier[params_cp_hier$divergent_hier == 0,]
+
+ggplot(nondiv_params_cp_hier) +
+  geom_point(aes(x = `beta_sex_2[1]`, y = `beta_width_2[1]`), color = "darkorange", size = 2, alpha=0.4) +
+  labs(x = "beta_sex", y = "beta_depth") +
+  ylim(-1, 2.75) +
+  xlim(-1,6)+
+  theme_minimal()+
+  geom_point(aes(x = `beta_sex_2[2]`, y = `beta_width_2[2]`), color ="seagreen3", size = 2, alpha=0.4)+
+  geom_point(aes(x = `beta_sex_2[3]`, y = `beta_width_2[3]`), color = "yellow2", size = 2, alpha=0.4)+
+  #adding_divergences point here 0 points
+  geom_point(data=div_params_cp_hier, aes(x = `beta_sex_2[1]`, y = `beta_width_2[1]`), color = "darkorange", size = 2)+
+  geom_point(data=div_params_cp_hier, aes(x = `beta_sex_2[2]`, y = `beta_width_2[2]`), color ="seagreen3", size = 2)+
+  geom_point(data=div_params_cp_hier, aes(x = `beta_sex_2[3]`, y = `beta_width_2[3]`), color = "yellow2", size = 2)
+
+#plot regression lines
+
+gamma_values_hier <- as.numeric(apply(list_of_draws2$gamma, 2, mean))
+beta_width_values_hier <- as.numeric(apply(list_of_draws2$beta_width_2, 2, mean))
+beta_sex_values_hier <- as.numeric(apply(list_of_draws2$beta_sex_2, 2, mean))
+
+# Create a data frame for plotting
+plot_data <- data.frame(
+  bill_depth = penguins$bill_depth,
+  bill_length = penguins$bill_length,
+  sex=penguins$sex,
+  species = as.factor(penguins$species)
+)
+
+# Predicted values using the linear models
+plot_data$predicted <- with(plot_data, gamma_values_hier[species] + beta_width_values_hier[species] * bill_depth + beta_sex_values_hier[species]*as.numeric(sex))
+plotdata1___0_hier<-plot_data[plot_data$species==1 & plot_data$sex==0,]
+plotdata1___1_hier<-plot_data[plot_data$species==1 & plot_data$sex==1,]
+plotdata3___0_hier<-plot_data[plot_data$species==3 & plot_data$sex==0,]
+plotdata3___1_hier<-plot_data[plot_data$species==3 & plot_data$sex==1,]
+plotdata2___0_hier<-plot_data[plot_data$species==2 & plot_data$sex==0,]
+plotdata2___1_hier<-plot_data[plot_data$species==2 & plot_data$sex==1,]
+
+# Create a scatterplot with lines for each species
+plot_hier <- ggplot(plot_data) +
+  geom_point(aes(x = bill_depth, y = bill_length, color = species), size = 1.8, alpha=0.5 ) +
+  geom_line(data= plotdata1___0_hier, aes(x=bill_depth,y = predicted), linewidth = 2, col='darkorange')+
+  geom_line(data= plotdata1___1_hier, aes(x=bill_depth,y = predicted), linewidth = 2, col='darkorange')+
+  geom_line(data= plotdata2___0_hier, aes(x=bill_depth,y = predicted), linewidth = 2, col='seagreen3')+
+  geom_line(data= plotdata2___1_hier, aes(x=bill_depth,y = predicted), linewidth = 2, col='seagreen3')+
+  geom_line(data= plotdata3___0_hier, aes(x=bill_depth,y = predicted), linewidth = 2, col='yellow2')+
+  geom_line(data= plotdata3___1_hier, aes(x=bill_depth,y = predicted), linewidth = 2, col='yellow2')+
+  scale_color_manual(values = c('darkorange', 'seagreen3', 'yellow2'),
+                     labels = c("Adelie", "Chinstrap", "Gentoo")) +
+  labs(title = "Scatterplot of Hierarchical Bayesian Linear Models for Each Species") +
+  theme_minimal()
+plot_hier
 
 
 ## 3.YES Separate2 - more informative priors ####
