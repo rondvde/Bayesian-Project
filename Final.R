@@ -1404,4 +1404,182 @@ stan_data <- list(
   species = as.integer(penguins$species)
 )
 # setting the priors very uninformative
+summary(fit2)
+sep_unin = stan_model("sens1_hier.stan")
 
+sens1_hier <- sampling(sep_unin,data=stan_data,iter=2000,warmup=500,chains=4,refresh=1200) 
+
+plot(sens1_hier)
+round(summary(sens1_hier)$summary[1:12,1:2],5)
+
+rstan::traceplot(sens1_hier,pars=c("gamma[1]","gamma[2]","gamma[3]","beta_width_2[1]","beta_width_2[2]","beta_width_2[3]","beta_sex_2[1]","beta_sex_2[2]","beta_sex_2[3]"), inc_warmup=TRUE, nrow=3)
+
+
+class(sens1_hier)
+list_of_drawssens1_hier <- rstan::extract(sens1_hier)
+print(names(list_of_drawssens1_hier))
+y_predsens1_hier <- list_of_drawssens1_hier$ynew
+
+
+#' Histogram of y + 8 yrep histograms
+ppc_hist(penguins$bill_length, y_predsens1_hier[211:218,])
+
+y_predsens1_hier
+
+#' Kernel density estimate of y + 100 yrep kernel density estimates
+ppc_dens_overlay(penguins$bill_length, y_predsens1_hier)
+
+#' ECDF of y + 500 yrep ECDFs
+ppc_ecdf_overlay(penguins$bill_length, y_predsens1_hier[1:500,])
+
+#' Scatterplot of yrep vs y
+ppc_scatter(penguins$bill_length, y_predsens1_hier[191:199,])+geom_abline()
+
+color_scheme_set("brewer-Paired")
+ppc_stat_2d(penguins$bill_length, y_predsens1_hier, stat=c("min","max"))
+color_scheme_set()
+
+ppc_stat(penguins$bill_length, y_predsens1_hier)
+
+loosens1_hier <- loo(sens1_hier, moment_match = TRUE)
+
+#wrong prior parameters####
+set.seed(565923)
+stan_data <- list(
+  N = nrow(penguins),
+  N_new=c(146, 119, 68),
+  bill_length = penguins$bill_length,
+  bill_depth = penguins$bill_depth,
+  sex= penguins$sex,
+  N_species = length(unique(penguins$species)),
+  species = as.integer(penguins$species)
+)
+
+sep_wrong = stan_model("sens2_hier.stan")
+
+sens2_hier <- sampling(sep_wrong,data=stan_data,iter=2000,warmup=500,chains=4,refresh=1200) 
+
+plot(sens2_hier)
+round(summary(sens2_hier)$summary[1:12,1:2],6)
+
+rstan::traceplot(sens2_hier,pars=c("gamma[1]","gamma[2]","gamma[3]","beta_width_2[1]","beta_width_2[2]","beta_width_2[3]","beta_sex_2[1]","beta_sex_2[2]","beta_sex_2[3]"), inc_warmup=TRUE, nrow=3)
+
+
+class(sens2_hier)
+list_of_drawssens2_hier <- rstan::extract(sens2_hier)
+print(names(list_of_drawssens2_hier))
+y_predsens2_hier <- list_of_drawssens2_hier$ynew
+
+
+#' Histogram of y + 8 yrep histograms
+ppc_hist(penguins$bill_length, y_predsens2_hier[211:218,])
+
+y_predsens2_hier
+
+#' Kernel density estimate of y + 100 yrep kernel density estimates
+ppc_dens_overlay(penguins$bill_length, y_predsens2_hier)
+
+#' ECDF of y + 500 yrep ECDFs
+ppc_ecdf_overlay(penguins$bill_length, y_predsens2_hier[1:500,])
+
+#' Scatterplot of yrep vs y
+ppc_scatter(penguins$bill_length, y_predsens2_hier[191:199,])+geom_abline()
+
+color_scheme_set("brewer-Paired")
+ppc_stat_2d(penguins$bill_length, y_predsens2_hier, stat=c("min","max"))
+color_scheme_set()
+
+ppc_stat(penguins$bill_length, y_predsens2_hier)
+
+loosens2_hier <- loo(sens2_hier, moment_match = TRUE)
+
+###model 8###
+set.seed(565923)
+stan_data <- list(
+  N = nrow(penguins),
+  N_new=c(146, 119, 68),
+  bill_length = penguins$bill_length,
+  bill_width = penguins$bill_depth,
+  sex= penguins$sex,
+  N_species = length(unique(penguins$species)),
+  species = as.integer(penguins$species),
+  N_sex = length(unique(penguins$sex)),
+  sex_id = as.integer(penguins$sex+1)
+)
+
+summary(fit8)$summary[1:9,1:2]
+sep_var_sens1 = stan_model("sep_spe_sex_sens1.stan")
+
+sens1_sep_var <- sampling(sep_var_sens1,data=stan_data,iter=2000,warmup=500,chains=4,refresh=1200) 
+
+plot(sens1_sep_var)
+round(summary(sens1_sep_var)$summary[1:9,1:2],5)
+
+rstan::traceplot(sens1_sep_var,pars=c("gamma[1]","gamma[2]","gamma[3]","beta_width_2[1]","beta_width_2[2]","beta_width_2[3]","beta_sex_2[1]","beta_sex_2[2]","beta_sex_2[3]"), inc_warmup=TRUE, nrow=3)
+
+
+class(sens1_sep_var)
+list_of_drawssens1_sep_var <- rstan::extract(sens1_sep_var)
+print(names(list_of_drawssens1_sep_var))
+y_predsens1_sep_var <- list_of_drawssens1_sep_var$ynew
+
+
+#' Histogram of y + 8 yrep histograms
+ppc_hist(penguins$bill_length, y_predsens1_sep_var[211:218,])
+
+y_predsens1_sep_var
+
+#' Kernel density estimate of y + 100 yrep kernel density estimates
+ppc_dens_overlay(penguins$bill_length, y_predsens1_sep_var)
+
+#' ECDF of y + 500 yrep ECDFs
+ppc_ecdf_overlay(penguins$bill_length, y_predsens1_sep_var[1:500,])
+
+#' Scatterplot of yrep vs y
+ppc_scatter(penguins$bill_length, y_predsens1_sep_var[191:199,])+geom_abline()
+
+color_scheme_set("brewer-Paired")
+ppc_stat_2d(penguins$bill_length, y_predsens1_sep_var, stat=c("min","max"))
+color_scheme_set()
+
+ppc_stat(penguins$bill_length, y_predsens1_sep_var)
+
+loosens1_sep_var <- loo(sens1_sep_var, moment_match = TRUE)
+
+#wrong parameters####
+set.seed(565923)
+
+sep_var_wrong = stan_model("sep_spe_sex_sens2.stan")
+
+sens2_sep_var <- sampling(sep_var_wrong,data=stan_data,iter=2000,warmup=500,chains=4,refresh=1200) 
+
+plot(sens2_sep_var)
+round(summary(sens2_sep_var)$summary[1:9,1:2],6)
+
+
+class(sens2_sep_var)
+list_of_drawssens2_sep_var <- rstan::extract(sens2_sep_var)
+print(names(list_of_drawssens2_sep_var))
+y_predsens2_sep_var <- list_of_drawssens2_sep_var$ynew
+
+
+#' Histogram of y + 8 yrep histograms
+ppc_hist(penguins$bill_length, y_predsens2_sep_var[211:218,])
+
+
+#' Kernel density estimate of y + 100 yrep kernel density estimates
+ppc_dens_overlay(penguins$bill_length, y_predsens2_sep_var)
+
+#' ECDF of y + 500 yrep ECDFs
+ppc_ecdf_overlay(penguins$bill_length, y_predsens2_sep_var[1:500,])
+
+#' Scatterplot of yrep vs y
+ppc_scatter(penguins$bill_length, y_predsens2_sep_var[191:199,])+geom_abline()
+
+color_scheme_set("brewer-Paired")
+ppc_stat_2d(penguins$bill_length, y_predsens2_sep_var, stat=c("min","max"))
+color_scheme_set()
+
+ppc_stat(penguins$bill_length, y_predsens2_sep_var)
+
+loosens2_sep_var <- loo(sens2_sep_var, moment_match = TRUE)
