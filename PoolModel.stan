@@ -46,10 +46,10 @@ model {
 
 
 generated quantities {
-
   vector[N] log_lik; 
   vector[N] ynew;
-  
+
+
   for (i in 1:N) {
     log_lik[i] = normal_lpdf(y[i] | mu[i], sqrt(sigma));
   }
